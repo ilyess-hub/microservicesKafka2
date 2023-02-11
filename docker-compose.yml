@@ -1,0 +1,59 @@
+version: '3'
+services:
+  app:
+    build : .
+    ports:
+      - 9191:9191
+    networks:
+      - app-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/app_db
+      - SPRING_DATASOURCE_USERNAME=app_user
+      - SPRING_DATASOURCE_PASSWORD=app_pass
+      - KAFKA_BROKER=kafka:9092
+      - ZOOKEEPER_HOST=zookeeper:2181
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    networks:
+      - app-network
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 5050:80
+    networks:
+      - app-network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin@example.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin_pass
+
+  zookeeper:
+    image: zookeeper
+    ports:
+      - 2181:2181
+    networks:
+      - app-network
+
+  kafka:
+    image: confluentinc/cp-kafka
+    ports:
+      - 9092:9092
+    networks:
+      - app-network
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_BROKER_ID: 1
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:

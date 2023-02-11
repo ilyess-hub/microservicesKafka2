@@ -24,9 +24,12 @@ public class OrderNotificationListener {
 
     @KafkaListener(topics = "order-topic", groupId = "foo")
     public void listenGroupFoo(String message) {
+
         System.out.println("Received Message in group foo: " + message);
+
         ObjectMapper object = new ObjectMapper();
         Order order = null;
+
         try {
             order = object.readValue(message, Order.class);
         } catch (JsonProcessingException e) {
@@ -42,6 +45,7 @@ public class OrderNotificationListener {
             order.setStatus("FAILED");
             orderCRUD.save(order);
         }
+
 
     }
 }
