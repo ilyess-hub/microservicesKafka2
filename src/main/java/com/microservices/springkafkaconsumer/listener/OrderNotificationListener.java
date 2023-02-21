@@ -6,46 +6,40 @@ import com.microservices.springkafkaconsumer.bean.Order;
 import com.microservices.springkafkaconsumer.bean.User;
 import com.microservices.springkafkaconsumer.repo.OrderCRUD;
 import com.microservices.springkafkaconsumer.repo.UserCRUD;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
+@Slf4j
 public class OrderNotificationListener {
 
-    @Value("${order.topic.name}")
-    private String topicName;
+
 
     @Autowired
     OrderCRUD orderCRUD;
     @Autowired
     UserCRUD userCRUD;
 
-    @KafkaListener(topics = "order-topic", groupId = "foo")
-    public void listenGroupFoo(String message) {
+
+    @KafkaListener(topics = "ORDER_TOPIC", groupId = "foo")
+    public void listenGroupFoo(String message) throws JsonProcessingException {
 
         System.out.println("Received Message in group foo: " + message);
 
+        log.info("after message");
+
         ObjectMapper object = new ObjectMapper();
-        Order order = null;
+        log.info("after mapper");
 
-        try {
-            order = object.readValue(message, Order.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        User user = userCRUD.findById(order.getUserId()).get();
-        if (user.getBalance() > order.getOrderAmount()) {
-            user.setBalance(user.getBalance() - order.getOrderAmount());
-            order.setStatus("SUCCESS");
-            userCRUD.save(user);
-            orderCRUD.save(order);
-        } else {
-            order.setStatus("FAILED");
-            orderCRUD.save(order);
-        }
+        User user = object.readValue(message, User.class);
 
+      userCRUD.save(user);
 
     }
+
+
 }
