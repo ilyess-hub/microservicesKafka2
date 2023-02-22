@@ -20,26 +20,23 @@ public class OrderNotificationListener {
 
 
     @Autowired
-    OrderCRUD orderCRUD;
-    @Autowired
-    UserCRUD userCRUD;
+     private UserCRUD userCRUD;
 
 
     @KafkaListener(topics = "ORDER_TOPIC", groupId = "foo")
-    public void listenGroupFoo(String message) throws JsonProcessingException {
+    public void listenGroupFoo(String message) {
 
-        System.out.println("Received Message in group foo: " + message);
-
-        log.info("after message");
+        log.info("Received Message in group foo:[{}] ", message);
 
         ObjectMapper object = new ObjectMapper();
-        log.info("after mapper");
+        User user = null;
+        try {
+            user = object.readValue(message, User.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        userCRUD.save(user);
 
-        User user = object.readValue(message, User.class);
-
-      userCRUD.save(user);
 
     }
-
-
 }
